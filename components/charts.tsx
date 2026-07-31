@@ -42,7 +42,7 @@ export default function ChartAreaDefault<TData extends Record<string, unknown>>(
   title = "Area Chart",
   yLabel = "Limit",
   desc,
-  plus = "true"
+  plus = true
 }: ChartAreaDefaultProps<TData>) {
   const chartConfig: ChartConfig = {
     desktop: {
