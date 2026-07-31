@@ -27,7 +27,9 @@ CoreLink is a minimum viable product for an Entrepris Resources Planning platfor
    - Relational Database (PostgreSQL)
 
 
-## Note :
+## usage :
 
-the last version of this project is under-reviewing and will deployed soon
+use those credentials to sign in : 
+ - As Owner : owner@erp.dz / owner123
+ - As Manager : manager@erp.dz / manager123
 
