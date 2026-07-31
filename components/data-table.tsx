@@ -208,6 +208,18 @@ function createActionsColumn<TData>({
   }
 }
 
+/** Whether the cell at `index` should render a right border. We skip the
+ *  border on the cell immediately before the "actions" (···) column so
+ *  that column doesn't visually read as its own bordered field. */
+function shouldShowRightBorder<TData>(
+  index: number,
+  cells: { column: { id: string } }[]
+) {
+  if (index >= cells.length - 1) return false
+  if (cells[index + 1].column.id === "actions") return false
+  return true
+}
+
 function DraggableRow<TData extends { id: UniqueIdentifier }>({
   row,
 }: {
@@ -216,6 +228,7 @@ function DraggableRow<TData extends { id: UniqueIdentifier }>({
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
   })
+  const cells = row.getVisibleCells()
   return (
     <TableRow
       data-state={row.getIsSelected() && "selected"}
@@ -227,9 +240,23 @@ function DraggableRow<TData extends { id: UniqueIdentifier }>({
         transition: transition,
       }}
     >
-      {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+      {cells.map((cell, index) => (
+        <TableCell
+          key={cell.id}
+          className={
+            shouldShowRightBorder(index, cells) ? "border-r" : undefined
+          }
+        >
+          {cell.column.id === "id" ? (
+            <span
+              className="font-mono text-xs text-muted-foreground truncate block max-w-[90px]"
+              title={String(cell.getValue() ?? "")}
+            >
+              {String(cell.getValue() ?? "")}
+            </span>
+          ) : (
+            flexRender(cell.column.columnDef.cell, cell.getContext())
+          )}
         </TableCell>
       ))}
     </TableRow>
@@ -237,11 +264,26 @@ function DraggableRow<TData extends { id: UniqueIdentifier }>({
 }
 
 function PlainRow<TData>({ row }: { row: Row<TData> }) {
+  const cells = row.getVisibleCells()
   return (
     <TableRow data-state={row.getIsSelected() && "selected"}>
-      {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+      {cells.map((cell, index) => (
+        <TableCell
+          key={cell.id}
+          className={
+            shouldShowRightBorder(index, cells) ? "border-r" : undefined
+          }
+        >
+          {cell.column.id === "id" ? (
+            <span
+              className="font-mono text-xs text-muted-foreground truncate block max-w-[90px]"
+              title={String(cell.getValue() ?? "")}
+            >
+              {String(cell.getValue() ?? "")}
+            </span>
+          ) : (
+            flexRender(cell.column.columnDef.cell, cell.getContext())
+          )}
         </TableCell>
       ))}
     </TableRow>
@@ -442,8 +484,16 @@ export function DataTable<TData extends { id: UniqueIdentifier }>({
       <TableHeader className="sticky top-0 z-10 bg-muted">
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <TableHead key={header.id} colSpan={header.colSpan}>
+            {headerGroup.headers.map((header, index) => (
+              <TableHead
+                key={header.id}
+                colSpan={header.colSpan}
+                className={
+                  shouldShowRightBorder(index, headerGroup.headers)
+                    ? "border-r"
+                    : undefined
+                }
+              >
                 {header.isPlaceholder
                   ? null
                   : flexRender(
@@ -460,7 +510,7 @@ export function DataTable<TData extends { id: UniqueIdentifier }>({
   )
 
   return (
-    <div className="flex w-full  flex-col gap-4 mt-5">
+    <div className="flex w-full min-w-0 flex-col gap-4 mt-5">
       <div className="flex items-center justify-between gap-2 px-4 lg:px-6">
         <div className="flex flex-2 items-center  gap-2">{toolbar}</div>
         <div className="flex justify-between w-full items-center gap-2">
@@ -492,7 +542,7 @@ export function DataTable<TData extends { id: UniqueIdentifier }>({
           </DropdownMenu>
           {renderAddForm && (
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
-              <DialogTrigger render={<Button className="bg-white text-black" />}>
+              <DialogTrigger render={<Button className="bg-black text-white" />}>
                 <PlusIcon />
                 Add {buttonText}
               </DialogTrigger>
@@ -505,8 +555,8 @@ export function DataTable<TData extends { id: UniqueIdentifier }>({
         </div>
       </div>
 
-      <div className="px-4 lg:px-6">
-        <div className="overflow-hidden bg-white rounded-lg border">
+      <div className="px-4 lg:px-6 min-w-0">
+        <div className="overflow-auto max-h-[600px] min-w-0 bg-white rounded-lg border">
           {enableDragAndDrop ? (
             <DndContext
               collisionDetection={closestCenter}
@@ -524,13 +574,13 @@ export function DataTable<TData extends { id: UniqueIdentifier }>({
       </div>
 
       <div className="flex items-center justify-between px-4">
-        <div className="hidden flex-1 text-sm  text-white lg:flex">
+        <div className="hidden flex-1 text-sm  text-black lg:flex">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
         <div className="flex w-full items-center gap-8 lg:w-fit">
           <div className="hidden items-center gap-2 lg:flex">
-            <Label htmlFor="rows-per-page" className="text-sm text-white font-medium">
+            <Label htmlFor="rows-per-page" className="text-sm text-black font-medium">
               Rows per page
             </Label>
             <Select
@@ -541,7 +591,7 @@ export function DataTable<TData extends { id: UniqueIdentifier }>({
                 value: `${size}`,
               }))}
             >
-              <SelectTrigger size="sm" className="w-20 text-white" id="rows-per-page">
+              <SelectTrigger size="sm" className="w-20 text-black" id="rows-per-page">
                 <SelectValue placeholder={table.getState().pagination.pageSize} />
               </SelectTrigger>
               <SelectContent side="top">
@@ -555,7 +605,7 @@ export function DataTable<TData extends { id: UniqueIdentifier }>({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex w-fit text-white items-center justify-center text-sm font-medium">
+          <div className="flex w-fit text-black items-center justify-center text-sm font-medium">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}
           </div>

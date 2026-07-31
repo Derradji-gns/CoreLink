@@ -1,39 +1,64 @@
 "use client"
-import { DataTable } from "@/components/data-table";
 
-import data from "../data.json"
-import { ManagerForm } from "./managers-form";
+import { useEffect, useState, useCallback } from "react"
+import { DataTable } from "@/components/data-table"
+import { getManagers, deleteManager } from "./managers"
+import { ManagerForm } from "./managers-form"
+
 export default function Page() {
+  const [data, setData] = useState<any[]>([])
 
-        const managerColumns = [
-        { accessorKey: "id", header: "id" },
-  { accessorKey: "header", header: "header" },
-  { accessorKey: "type", header: "type" },
-  { accessorKey: "status", header: "status" },
-  { accessorKey: "target", header: "target" },
-  { accessorKey: "limit", header: "limit" },
-  { accessorKey: "reviewer", header: "reviewer" },
-    ]
-    return (
-        <div className=" m-6">
+  const fetchData = useCallback(async () => {
+    try {
+      const fresh = await getManagers()
+      setData(fresh)
+    } catch (err) {
+      console.error("Failed to fetch managers:", err)
+    }
+  }, [])
 
-                
-            <DataTable
-                  data={data}
-                  columns={managerColumns}
-                  buttonText="Client"
-                  renderAddForm={(close) => (
-                    <ManagerForm onSuccess={close} />
-                  )}
-                  renderEditForm={(manager, close) => (
-                    <ManagerForm manager={manager} onSuccess={close} />
-                  )}
-                  onDeleteRow={async (manager) => {
-                    if (!confirm(`Delete ${manager.name}?`)) return
-                    await deleteProduct(manager.id)
-                    // refetch or update your data state here
-                  }}
-                />
-        </div>
-    )
+  useEffect(() => {
+    fetchData()
+    const id = setInterval(fetchData, 4000)
+    return () => clearInterval(id)
+  }, [fetchData])
+
+  const managerColumns = [
+    { accessorKey: "id", header: "id" },
+    { accessorKey: "name", header: "name" },
+    { accessorKey: "email", header: "email" },
+    { accessorKey: "status", header: "status" },
+  ]
+
+  return (
+    <div className="m-6">
+      <DataTable
+        data={data}
+        columns={managerColumns}
+        buttonText="Manager"
+        renderAddForm={(close) => (
+          <ManagerForm
+            onSuccess={() => {
+              fetchData()
+              close()
+            }}
+          />
+        )}
+        renderEditForm={(manager, close) => (
+          <ManagerForm
+            manager={manager}
+            onSuccess={() => {
+              fetchData()
+              close()
+            }}
+          />
+        )}
+        getRowLabel={(manager) => manager.name}
+        onDeleteRow={async (manager) => {
+          await deleteManager(manager.id)
+          fetchData()
+        }}
+      />
+    </div>
+  )
 }

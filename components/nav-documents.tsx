@@ -18,6 +18,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { MoreHorizontalIcon, FolderIcon, ShareIcon, Trash2Icon } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 export function NavDocuments({
   items,
@@ -30,62 +31,69 @@ export function NavDocuments({
 }) {
   const { isMobile } = useSidebar()
   const [showMore, setShowMore] = useState(false)
+  const pathname = usePathname()
 
   // Show first 3 by default, reveal the rest when "More" is clicked
   const visibleItems = showMore ? items : items.slice(0, 3)
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel className="text-black">Documents</SidebarGroupLabel>
+      <SidebarGroupLabel className="text-slate-400">Documents</SidebarGroupLabel>
       <SidebarMenu>
-        {visibleItems.map((item) => (
-          <SidebarMenuItem key={item.name} className=" text-white">
-            <SidebarMenuButton render={<a href={item.url} />}>
-              {item.icon}
-              <span>{item.name}</span>
-            </SidebarMenuButton>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <SidebarMenuAction
-                    showOnHover
-                    className="aria-expanded:bg-muted"
-                  />
-                }
+        {visibleItems.map((item) => {
+          const isActive = pathname === item.url
+          return (
+            <SidebarMenuItem
+              key={item.name}
+              className={isActive ? "bg-[#1E293B] text-white" : "text-slate-400"}
+            >
+              <SidebarMenuButton
+                className={isActive ? "text-sky-400" : "text-slate-400"}
+                render={<a href={item.url} />}
               >
-                <MoreHorizontalIcon />
-                <span className="sr-only">More</span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-24"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <DropdownMenuItem>
-                  <FolderIcon />
-                  <span>Open</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <ShareIcon />
-                  <span>Share</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive">
-                  <Trash2Icon />
-                  <span>Delete</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        ))}
+                {item.icon}
+                <span>{item.name}</span>
+              </SidebarMenuButton>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <SidebarMenuAction
+                      showOnHover
+                      className="aria-expanded:bg-muted"
+                    />
+                  }
+                >
+                  <MoreHorizontalIcon />
+                  <span className="sr-only">More</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-24"
+                  side={isMobile ? "bottom" : "right"}
+                  align={isMobile ? "end" : "start"}
+                >
+                  <DropdownMenuItem>
+                    <FolderIcon className="mr-2 h-4 w-4" /> Open
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <ShareIcon className="mr-2 h-4 w-4" /> Share
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-red-500">
+                    <Trash2Icon className="mr-2 h-4 w-4" /> Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          )
+        })}
 
-        {items.length > 1 && (
+        {items.length > 3 && (
           <SidebarMenuItem>
             <SidebarMenuButton
-              className="text-sidebar-foreground/70"
+              className="text-slate-400"
               onClick={() => setShowMore((prev) => !prev)}
             >
-              <MoreHorizontalIcon className="text-sidebar-foreground/70" />
+              <MoreHorizontalIcon className="text-slate-400" />
               <span>{showMore ? "Show less" : "More"}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

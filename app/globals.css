@@ -2,6 +2,11 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* globals.css */
+body {
+  background-color: #ffffff; /* or your light theme bg token */
+}
+
 @theme {
   --color-navy: #1E2A38;
   --color-tealBright: #00BFA6;

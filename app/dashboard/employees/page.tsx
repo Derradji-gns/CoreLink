@@ -1,42 +1,64 @@
 "use client"
-import { DataTable,  } from "@/components/data-table"
 
-import data from "../data.json"
-import { EmployeeForm } from "./employees-form";
+import { useEffect, useState, useCallback } from "react"
+import { DataTable } from "@/components/data-table"
+import { getEmployees, deleteEmployer } from "./employees"
+import { EmployeeForm } from "./employees-form"
 
+export default function Page() {
+  const [data, setData] = useState<any[]>([])
 
+  const fetchData = useCallback(async () => {
+    try {
+      const fresh = await getEmployees()
+      setData(fresh)
+    } catch (err) {
+      console.error("Failed to fetch employees:", err)
+    }
+  }, [])
 
+  useEffect(() => {
+    fetchData()
+    const id = setInterval(fetchData, 4000)
+    return () => clearInterval(id)
+  }, [fetchData])
 
-export default function page() {
+  const productColumns = [
+    { accessorKey: "id", header: "id" },
+    { accessorKey: "name", header: "name" },
+    { accessorKey: "email", header: "email" },
+    { accessorKey: "status", header: "status" },
+  ]
 
-    const productColumns = [
-        { accessorKey: "id", header: "id" },
-  { accessorKey: "header", header: "header" },
-  { accessorKey: "type", header: "type" },
-  { accessorKey: "status", header: "status" },
-  { accessorKey: "target", header: "target" },
-  { accessorKey: "limit", header: "limit" },
-  { accessorKey: "reviewer", header: "reviewer" },
-    ];
-
-    return (
-   <div className=" m-6">
-    <DataTable
-      data={data}
-      columns={productColumns}
-      buttonText="Client"
-      renderAddForm={(close) => (
-        <EmployeeForm onSuccess={close} />
-      )}
-      renderEditForm={(product, close) => (
-        <EmployeeForm product={product} onSuccess={close} />
-      )}
-      onDeleteRow={async (client) => {
-        if (!confirm(`Delete ${product.name}?`)) return
-        await deleteProduct(product.id)
-        // refetch or update your data state here
-      }}
-    />
-    </div>)
+  return (
+    <div className="m-6">
+      <DataTable
+        data={data}
+        columns={productColumns}
+        buttonText="Employee"
+        renderAddForm={(close) => (
+          <EmployeeForm
+            onSuccess={() => {
+              fetchData()
+              close()
+            }}
+          />
+        )}
+        renderEditForm={(employer, close) => (
+          <EmployeeForm
+            employer={employer}
+            onSuccess={() => {
+              fetchData()
+              close()
+            }}
+          />
+        )}
+        getRowLabel={(employer) => employer.name}
+        onDeleteRow={async (employer) => {
+          await deleteEmployer(employer.id)
+          fetchData()
+        }}
+      />
+    </div>
+  )
 }
-  

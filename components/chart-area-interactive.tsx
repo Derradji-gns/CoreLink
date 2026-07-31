@@ -126,23 +126,35 @@ const chartData = [
   { date: "2024-06-30", desktop: 446, mobile: 400 },
 ]
 
-const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)",
-  },
-} satisfies ChartConfig
+type ChartAreaInteractiveProps = {
+  desktopColor?: string
+  mobileColor?: string
+}
 
-export default function ChartAreaInteractive() {
+export default function ChartAreaInteractive({
+  desktopColor = "var(--primary)",
+  mobileColor = "var(--primary)",
+}: ChartAreaInteractiveProps) {
   const isMobile = useIsMobile()
   const [timeRange, setTimeRange] = React.useState("90d")
+
+  const chartConfig = React.useMemo(
+    () =>
+      ({
+        visitors: {
+          label: "Visitors",
+        },
+        desktop: {
+          label: "Desktop",
+          color: desktopColor,
+        },
+        mobile: {
+          label: "Mobile",
+          color: mobileColor,
+        },
+      }) satisfies ChartConfig,
+    [desktopColor, mobileColor]
+  )
 
   React.useEffect(() => {
     if (isMobile) {

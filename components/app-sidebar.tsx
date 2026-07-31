@@ -15,181 +15,209 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { IdCardLanyard ,Flag, LayoutDashboard,FolderCode, ShieldCheck , ShoppingCart ,CreditCard, ListIcon,PackageSearch, ChartBarIcon, UsersIcon, CameraIcon, FileTextIcon, Settings2Icon, CircleHelpIcon, SearchIcon, CommandIcon } from "lucide-react"
+import {
+  IdCardLanyard,
+  Flag,
+  LayoutDashboard,
+  FolderCode,
+  ShieldCheck,
+  ShoppingCart,
+  CreditCard,
+  PackageSearch,
+  UsersIcon,
+  CameraIcon,
+  FileTextIcon,
+  Settings2Icon,
+  CommandIcon,
+} from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+
+const supabase = createClient()
+type Role = "owner" | "manager" | null
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
       url: "/dashboard",
-      icon: (
-       <LayoutDashboard />
-      ),
+      icon: <LayoutDashboard />,
     },
     {
-      title: "Analytics",
-      url: "/dashboard/analytics",
-      icon: (
-        <ChartBarIcon
-        />
-      ),
-    },{
       title: "Managers",
       url: "/dashboard/managers",
-      icon: (
-        <ShieldCheck />
-      ),
+      icon: <ShieldCheck />,
+      ownerOnly: true,
     },
     {
       title: "Employees",
       url: "/dashboard/employees",
-      icon: (
-        <IdCardLanyard />
-      ),
+      icon: <IdCardLanyard />,
     },
     {
       title: "Clients",
       url: "/dashboard/clients",
-      icon: (
-        <UsersIcon/>
-      ),
-    }
+      icon: <UsersIcon />,
+    },
   ],
   navClouds: [
     {
       title: "Capture",
-      icon: (
-        <CameraIcon
-        />
-      ),
+      icon: <CameraIcon />,
       isActive: true,
       url: "#",
       items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
+        { title: "Active Proposals", url: "#" },
+        { title: "Archived", url: "#" },
       ],
     },
     {
       title: "Proposal",
-      icon: (
-        <FileTextIcon
-        />
-      ),
+      icon: <FileTextIcon />,
       url: "#",
       items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
+        { title: "Active Proposals", url: "#" },
+        { title: "Archived", url: "#" },
       ],
     },
     {
       title: "Prompts",
-      icon: (
-        <FileTextIcon
-        />
-      ),
+      icon: <FileTextIcon />,
       url: "#",
       items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
+        { title: "Active Proposals", url: "#" },
+        { title: "Archived", url: "#" },
       ],
     },
   ],
   navSecondary: [
     {
       title: "Settings",
-      url: "#",
-      icon: (
-        <Settings2Icon
-        />
-      ),
+      url: "/dashboard/settings",
+      icon: <Settings2Icon />,
     },
     {
       title: "Get Help",
       url: "https://www.derradjiamine.me",
-      icon: (
-        <FolderCode />
-      ),
-    }
+      icon: <FolderCode />,
+    },
   ],
   documents: [
     {
       name: "products",
       url: "/dashboard/products",
-      icon: (
-        <PackageSearch /> 
-      ),
+      icon: <PackageSearch />,
     },
-      {
+    {
       name: "orders",
       url: "/dashboard/orders",
-      icon: (
-        <ShoppingCart />
-      ),
+      icon: <ShoppingCart />,
     },
-      {
+    {
       name: "payment",
       url: "/dashboard/payments",
-      icon: (
-        <CreditCard />
-      ),
-      
+      icon: <CreditCard />,
+      ownerOnly: true,
     },
     {
       name: "Reports",
       url: "/dashboard/reports",
-      icon: (
-        <Flag />
-      ),
+      icon: <Flag />,
     },
-   
   ],
 }
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [role, setRole] = React.useState<Role>(null)
+  const [userDisplay, setUserDisplay] = React.useState({
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/admin.webp",
+  })
+
+  React.useEffect(() => {
+    let isMounted = true
+
+    async function fetchRole() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+
+      if (isMounted) {
+        setRole((profile?.role as Role) ?? "manager")
+      }
+    }
+
+    fetchRole()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  React.useEffect(() => {
+    let isMounted = true
+
+    async function fetchUserDisplay() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || !isMounted) return
+
+      setUserDisplay({
+        name: user.user_metadata?.full_name || user.email?.split("@")[0] || "User",
+        email: user.email ?? "",
+        avatar: "/admin.webp",
+      })
+    }
+
+    fetchUserDisplay()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const visibleNavMain = React.useMemo(
+    () => data.navMain.filter((item) => !item.ownerOnly || role === "owner"),
+    [role]
+  )
+
+  const visibleDocuments = React.useMemo(
+    () => data.documents.filter((item) => !item.ownerOnly || role === "owner"),
+    [role]
+  )
+
   return (
-    <Sidebar className="bg-white text-black" collapsible="offcanvas" {...props}>
-      <SidebarHeader className="bg-white text-black">
+    <Sidebar
+      className="bg-[#0F172A] text-[#94A3B8] border-r border-[#1E293B]"
+      collapsible="offcanvas"
+      {...props}
+    >
+      <SidebarHeader className="bg-[#0F172A] text-[#94A3B8] border-b border-[#1E293B]">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               className="data-[slot=sidebar-menu-button]:p-1.5!"
               render={<a href="#" />}
             >
-              <CommandIcon className="size-5!" />
-              <span className="text-base font-semibold text-black">CoreLink System</span>
+              <CommandIcon className="size-5 text-[#38BDF8]" />
+              <span className="text-base font-semibold text-[#38BDF8]">
+                CoreLink System
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent className="text-black">
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+
+      <SidebarContent className="bg-[#0F172A] text-[#94A3B8]">
+        <NavMain items={visibleNavMain}  />
+        <NavDocuments items={visibleDocuments} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter className="text-black">
-        <NavUser user={data.user} />
+
+      <SidebarFooter className="bg-[#0F172A]">
+        <NavUser  user={userDisplay} />
       </SidebarFooter>
     </Sidebar>
   )

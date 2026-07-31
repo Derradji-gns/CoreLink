@@ -23,21 +23,21 @@ export function NavMain({
   const pathname = usePathname()
 
   return (
-    <SidebarGroup className=" mt-10">
-      <SidebarGroupContent className="flex flex-col gap-2">
+    <SidebarGroup className=" mt-10 ">
+      <SidebarGroupContent className="flex flex-col gap-2 ">
         <SidebarMenu>
           {items.map((item) => {
             const isActive = pathname === item.url
 
             return (
-              <SidebarMenuItem  key={item.title} className="  text-black">
+              <SidebarMenuItem  key={item.title} className="  text-white">
                 <SidebarMenuButton
                   tooltip={item.title}
                   render={<a href={item.url} />}
-                  className={isActive ? "bg-zinc-200 " : ""}
+                  className={isActive ? "bg-[#1E293B] text-sky-400" : "text-slate-400"}
                 >
                   {item.icon}
-                  <span>{item.title}</span>
+                  <span className={isActive ? " text-sky-400 " : "text-slate-400"}>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )

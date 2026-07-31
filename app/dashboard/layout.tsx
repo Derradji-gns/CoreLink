@@ -16,6 +16,7 @@ export default function RootLayout({
           "--header-height": "calc(var(--spacing) * 12)",
         } as React.CSSProperties
       }
+      className="min-h-screen"
     >
       <AppSidebar variant="inset" />
       <SidebarInset>

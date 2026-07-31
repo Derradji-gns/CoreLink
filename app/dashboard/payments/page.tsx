@@ -1,32 +1,28 @@
 "use client"
 import { DataTable } from "@/components/data-table";
-import data from "../data.json"
+import data from "./payments.json"
 
-type Item = {
-  accessorKey: string
-  header: string
-}
 
 export default function Page() {
 
    
    
 
-    const clientColumns : Item[] = [
-        { accessorKey: "id", header: "id" },
-  { accessorKey: "header", header: "header" },
-  { accessorKey: "type", header: "type" },
+ const paymentsColumns = [
+  { accessorKey: "id", header: "id" },
+  { accessorKey: "client", header: "client" },
+  { accessorKey: "provider", header: "provider" },
+  { accessorKey: "method", header: "method" },
+  { accessorKey: "amount", header: "amount" },
+  { accessorKey: "currency", header: "currency" },
   { accessorKey: "status", header: "status" },
-  { accessorKey: "target", header: "target" },
-  { accessorKey: "limit", header: "limit" },
-  { accessorKey: "reviewer", header: "reviewer" },
-    ]
+]
     return (
-        <div className=" m-6">
+        <div className="m-6 overflow-hidden">
 
                 
             <DataTable data={data}
-             columns={clientColumns}/>
+             columns={paymentsColumns}/>
         </div>
     )
 }

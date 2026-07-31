@@ -1,40 +1,65 @@
 "use client"
-import { DataTable } from "@/components/data-table";
-import data from "../data.json"
-import { ProductForm } from "./products-form";
+
+import { useEffect, useState, useCallback } from "react"
+import { DataTable } from "@/components/data-table"
+import { getProducts, deleteProduct } from "./products"
+import { ProductForm } from "./products-form"
+
 export default function Page() {
+  const [data, setData] = useState<any[]>([])
 
-   
+  const fetchData = useCallback(async () => {
+    try {
+      const fresh = await getProducts()
+      setData(fresh)
+    } catch (err) {
+      console.error("Failed to fetch products:", err)
+    }
+  }, [])
 
-    const productColumns = [
-        { accessorKey: "id", header: "id" },
-  { accessorKey: "header", header: "header" },
-  { accessorKey: "type", header: "type" },
-  { accessorKey: "status", header: "status" },
-  { accessorKey: "target", header: "target" },
-  { accessorKey: "limit", header: "limit" },
-  { accessorKey: "reviewer", header: "reviewer" },
-    ]
-    return (
-        <div className=" m-6">
+  useEffect(() => {
+    fetchData()
+    const id = setInterval(fetchData, 4000)
+    return () => clearInterval(id)
+  }, [fetchData])
 
-                
-            <DataTable
-                              data={data}
-                              columns={productColumns}
-                              buttonText="Client"
-                              renderAddForm={(close) => (
-                                <ProductForm onSuccess={close} />
-                              )}
-                              renderEditForm={(product, close) => (
-                                <ProductForm product={product} onSuccess={close} />
-                              )}
-                              onDeleteRow={async (product) => {
-                                if (!confirm(`Delete ${product.name}?`)) return
-                                await deleteProduct(product.id)
-                                // refetch or update your data state here
-                              }}
-                            />
-        </div>
-    )
+  const productColumns = [
+    { accessorKey: "id", header: "id" },
+    { accessorKey: "name", header: "name" },
+    { accessorKey: "amount", header: "amount" },
+    { accessorKey: "price", header: "price" },
+    { accessorKey: "available", header: "available" },
+  ]
+
+  return (
+    <div className="m-6">
+      <DataTable
+        data={data}
+        columns={productColumns}
+        buttonText="Product"
+        renderAddForm={(close) => (
+          <ProductForm
+            onSuccess={() => {
+              fetchData()
+              close()
+            }}
+          />
+        )}
+        renderEditForm={(product, close) => (
+          <ProductForm
+            product={product}
+            onSuccess={() => {
+              fetchData()
+              close()
+            }}
+          />
+        )}
+        getRowLabel={(product) => product.name}
+        onDeleteRow={async (product) => {
+          await deleteProduct(product.id)
+          fetchData()
+        }}
+      />
+    </div>
+  )
 }
