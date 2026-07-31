@@ -1,7 +1,7 @@
 
 async function getOrders() {
 
-    const res = await fetch("http://localhost:3000/orders")
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`)
 
     if (!res.ok) {
     throw new Error("Failed to fetch orders")
