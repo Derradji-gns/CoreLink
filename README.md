@@ -29,7 +29,9 @@ CoreLink is a minimum viable product for an Entrepris Resources Planning platfor
 
 ## usage :
 
-use those credentials to sign in : 
+https://core-link-nu.vercel.app/
+
+Sign in using those credentials :
  - As Owner : owner@erp.dz / owner123
  - As Manager : manager@erp.dz / manager123
 
