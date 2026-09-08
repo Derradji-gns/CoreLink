@@ -11,3 +11,5 @@ async function getOrders() {
 }
 
 export const orders = await getOrders();
+
+/// just checking if the orders are being fetched correctly
