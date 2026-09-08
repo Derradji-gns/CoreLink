@@ -3,7 +3,8 @@
 // app/page.tsx
 "use client"
 
-import { LoginForm } from "@/components/login-form"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 import { ChartSpline } from "lucide-react"
 
 
@@ -17,7 +18,9 @@ export default function Page() {
           </div>
           CoreLink ERP
         </a>
-        <LoginForm  />
+        <Link href="/dashboard" className="flex flex-col gap-2">
+        <Button>Go to Dashboard</Button>
+        </Link>
       </div>
     </div>
   )
